@@ -1,0 +1,18 @@
+version: '3.4'
+
+services:
+  app:
+    build: .
+    container_name: dashapp
+    image: app-image
+    restart: always
+    volumes:
+      - .:/usr/src/app
+    tty: true
+    command: python app.py
+    ports:
+      - '80:8050'
+
+volumes:
+  mysql-data:
+  mongodata:
