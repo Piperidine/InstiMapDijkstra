@@ -51,7 +51,8 @@ edges = [
     [4,7],
     [5,6],
 ]
-
+import math 
+from datetime import datetime
 class Graph():
   
     def __init__(self, vertices):
@@ -68,7 +69,7 @@ class Graph():
   
         return min_index
     def dijkstra(self, src):
-  
+        st = datetime.now()
         dist = [float('inf')] * self.V
         prev = [None] * self.V
         dist[src] = 0
@@ -83,7 +84,8 @@ class Graph():
                 dist[v] > dist[u] + self.graph[u][v]:
                         dist[v] = dist[u] + self.graph[u][v]
                         prev[v] = u
-        return dist, prev
+        
+        return dist, prev, datetime.now() - st
 
 def distance(lat1,lon1,lat2,lon2):
     R = 6373.0

@@ -31,7 +31,7 @@ fig.update_layout(
 
 
 g = Graph(len(df))
-
+dijktime = 0
 for i in edges:
     x = i[0]
     y = i[1]
@@ -73,7 +73,17 @@ app.layout = html.Div(style={ 'background-color':'white', 'height':'100%'
             md=3),
         ]),
         dbc.Row([
-            dbc.Col(md=2),
+            dbc.Col([
+                html.Div([
+
+                    html.H3('Time Taken', className='card-title'),
+                    html.Br(),
+                    html.P('Dijkstra\'s: {}'.format(dijktime), className='card-body')
+                ])
+            ], 
+            className='card',
+            id='timecard',
+            md=2),
             dbc.Col(
             dcc.Graph(
                 id='crossfilter-insti',
@@ -96,8 +106,8 @@ def update_graph(start,destination):
     
     start-=1
     destination-=1   
-    dist, prev = g.dijkstra(start)
-
+    dist, prev, t_taken = g.dijkstra(start)
+    print(t_taken.microseconds/1000)
     path = [destination]
     src = start
     while True:
@@ -113,7 +123,7 @@ def update_graph(start,destination):
             visible_edges.append(edges.index([path[i],path[i+1]]))
         except:
             visible_edges.append(edges.index([path[i+1],path[i]]))
-    
+            
     for j in visible_edges:
         i = edges[j]
         x = i[0]
@@ -126,8 +136,7 @@ def update_graph(start,destination):
         hoverinfo='skip',
         line={'color':'orange'}
         ))
-
     return fig
 
 if __name__ == '__main__':
-    app.run_server(host='0.0.0.0')
+    app.run_server(host='0.0.0.0', debug=True)

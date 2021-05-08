@@ -3,7 +3,7 @@ version: '3.4'
 services:
   app:
     build: .
-    container_name: dashapp
+    container_name: dijkstra
     image: app-image
     restart: always
     volumes:
