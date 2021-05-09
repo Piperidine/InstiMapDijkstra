@@ -97,15 +97,16 @@ grap = [
     html.H3('Random Geometric Graphs', style={'margin-top':'2.5%', 'text-align':'center'}),
     dcc.Dropdown(
         id='crossfilter-n',
-        options=[{'label': i, 'value': i} for i in [5,10,25,50,100,200,300,1000,5000]],
+        options=[{'label': i, 'value': i} for i in [5,10,25,50,100,200,300,500,1000]],
         value=50,
-        placeholder='Select a destination'
+        placeholder='Select a destination',
+        style={'width':'40%', 'margin-left':'30%'},
         ),
     html.Div(className='row',
     children=[
         html.Div([], className='col-md-3'),
         html.Div([
-            dcc.Graph(id='main-graph')
+            dcc.Graph(id='main-graph', figure=fig)
         ], className='col-md-9')
     ])
 ]
@@ -137,9 +138,22 @@ def display_page(pathname):
     Output('main-graph', 'figure'),
     [Input('crossfilter-n', 'value')])
 def display_fig(n):
-    fig, timeit = ret_fig(n)
-    if fig is None:
-        return None
+    if n is None:
+        return go.Figure(data=[])
+    figu, timeit = ret_fig(n)
+    if figu is None:
+        figu = go.Figure(data=[], layout=go.Layout(
+            annotations=[ dict(
+                    text="Figure not loaded to prevent overload",
+                    showarrow=False,
+                    xref="paper", yref="paper",
+                    font_size=30,
+                    x=0.5, y=0.5 ) ],
+        ))
+        
+        return figu
+    else:
+        return figu
 
 @app.callback(
     Output('crossfilter-insti', 'figure'),
@@ -154,7 +168,7 @@ def update_graph(start,destination):
     start-=1
     destination-=1   
     dist, prev, t_taken = g.dijkstra(start)
-    print(t_taken.microseconds/1000)
+    # print(t_taken.microseconds/1000)
     path = [destination]
     src = start
     while True:
