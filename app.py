@@ -20,6 +20,8 @@ import math
 
 from constants import Graph, edges, distance
 
+from grapher import ret_fig
+
 df = pd.read_csv('distances.csv')[['Name','lat','long','Number']]
 
 px.set_mapbox_access_token('pk.eyJ1IjoiYW50b3JudmF5IiwiYSI6ImNrbmsyb3M3NDA3NGUycHM1bzg0MXBmeGwifQ.XDoxAtNYH_JlmZz0e7ZsnQ')
@@ -43,10 +45,7 @@ from flask import Flask
 
 server = Flask(__name__)
 app = dash.Dash(server=server,external_stylesheets=[dbc.themes.BOOTSTRAP])
-app.layout = html.Div(style={ 'background-color':'white', 'height':'100%'
-    
-},
-    children=[
+imap = [
         html.H1(children="Dijkstra's X Insti", style={'margin-top':'2.5%', 'text-align':'center'}),
         dbc.Row([
         dbc.Col(md= 2),
@@ -92,7 +91,55 @@ app.layout = html.Div(style={ 'background-color':'white', 'height':'100%'
             ), md=8),
         ],
             ),
+    ]
+
+grap = [
+    html.H3('Random Geometric Graphs', style={'margin-top':'2.5%', 'text-align':'center'}),
+    dcc.Dropdown(
+        id='crossfilter-n',
+        options=[{'label': i, 'value': i} for i in [5,10,25,50,100,200,300,1000,5000]],
+        value=50,
+        placeholder='Select a destination'
+        ),
+    html.Div(className='row',
+    children=[
+        html.Div([], className='col-md-3'),
+        html.Div([
+            dcc.Graph(id='main-graph')
+        ], className='col-md-9')
     ])
+]
+
+url_bar_and_content_div = html.Div([
+    dcc.Location(id='url', refresh=False),
+    html.Div(id='page-content', style={ 'background-color':'white', 'height':'100%'})
+])
+
+app.validation_layout = html.Div([
+    url_bar_and_content_div,
+    imap,
+    grap])
+
+app.layout = url_bar_and_content_div
+
+@app.callback(
+    Output('page-content', 'children'),
+    [Input('url', 'pathname')])
+def display_page(pathname):
+    if pathname in ['/network/','/network']:
+        return grap
+    elif pathname == '/':
+        return imap
+    else:
+        return imap
+
+@app.callback(
+    Output('main-graph', 'figure'),
+    [Input('crossfilter-n', 'value')])
+def display_fig(n):
+    fig, timeit = ret_fig(n)
+    if fig is None:
+        return None
 
 @app.callback(
     Output('crossfilter-insti', 'figure'),
