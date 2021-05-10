@@ -73,15 +73,8 @@ imap = [
         ]),
         dbc.Row([
             dbc.Col([
-                html.Div([
-
-                    html.H3('Time Taken', className='card-title'),
-                    html.Br(),
-                    html.P('Dijkstra\'s: {}'.format(dijktime), className='card-body')
-                ])
+                dbc.Button("Go to Graph Generator", color="dark",href='/network', style={'margin-left':'50%'}),
             ], 
-            className='card',
-            id='timecard',
             md=2),
             dbc.Col(
             dcc.Graph(
@@ -104,7 +97,16 @@ grap = [
         ),
     html.Div(className='row',
     children=[
-        html.Div([], className='col-md-3'),
+        html.Div([
+            dbc.Button("Go to InstiMap", color="dark",href='/', style={'margin-left':'30%'}),
+            html.Table([
+                html.Tr([
+                    html.Th('Algorithm'),
+                    html.Th('Time Taken (ms)'),
+                    html.Th('Relative'),
+                ])
+            ],style={'width':'100%', 'margin-left':'5%','margin-top':'15%'}, id='time-table')
+        ], className='col-md-3'),
         html.Div([
             dcc.Graph(id='main-graph', figure=fig)
         ], className='col-md-9')
@@ -136,11 +138,13 @@ def display_page(pathname):
 
 @app.callback(
     Output('main-graph', 'figure'),
+    Output('time-table', 'children'),
     [Input('crossfilter-n', 'value')])
 def display_fig(n):
     if n is None:
-        return go.Figure(data=[])
+        return [go.Figure(data=[]),[]]
     figu, timeit = ret_fig(n)
+    timeit = timeit[0][0]
     if figu is None:
         figu = go.Figure(data=[], layout=go.Layout(
             annotations=[ dict(
@@ -150,10 +154,53 @@ def display_fig(n):
                     font_size=30,
                     x=0.5, y=0.5 ) ],
         ))
-        
-        return figu
+        l = [('Dijkstra\'s',timeit[0]),('A*',timeit[2])]
+        l.sort(key=lambda x:x[1])
+        lay = [
+                html.Tr([
+                    html.Th('Algorithm'),
+                    html.Th('Time Taken (ms)'),
+                    html.Th('Relative'),
+                ]),
+                html.Tr([
+                    html.Th('{}'.format(l[0][0])),
+                    html.Th('{}'.format(int(l[0][1]*100000)/100)),
+                    html.Th('1x'),
+                ]),
+                html.Tr([
+                    html.Th('{}'.format(l[1][0])),
+                    html.Th('{}'.format(int(l[1][1]*100000)/100)),
+                    html.Th('~{}x'.format(int(l[1][1]/l[0][1]))),
+                ]),
+                ]
+
+        return [figu,lay]
     else:
-        return figu
+        l = [('Dijkstra\'s',timeit[0]),('Bellman-Ford',timeit[1]),('A*',timeit[2])]
+        l.sort(key=lambda x:x[1])
+        lay = [
+                html.Tr([
+                    html.Th('Algorithm'),
+                    html.Th('Time Taken (ms)'),
+                    html.Th('Relative'),
+                ]),
+                html.Tr([
+                    html.Th('{}'.format(l[0][0])),
+                    html.Th('{}'.format(int(l[0][1]*100000)/100)),
+                    html.Th('1x'),
+                ]),
+                html.Tr([
+                    html.Th('{}'.format(l[1][0])),
+                    html.Th('{}'.format(int(l[1][1]*100000)/100)),
+                    html.Th('~{}x'.format(int(l[1][1]/l[0][1]))),
+                ]),
+                html.Tr([
+                    html.Th('{}'.format(l[2][0])),
+                    html.Th('{}'.format(int(l[2][1]*100000)/100)),
+                    html.Th('~{}x'.format(int(l[2][1]/l[0][1]))),
+                ]),
+                ]
+        return [figu,lay]
 
 @app.callback(
     Output('crossfilter-insti', 'figure'),
@@ -200,4 +247,4 @@ def update_graph(start,destination):
     return fig
 
 if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', debug=True)
+    app.run_server(host='0.0.0.0', debug=False)

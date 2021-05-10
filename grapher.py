@@ -55,7 +55,7 @@ class Graph():
         
         return dist, prev
 
-    def bellman (self,src, edges):   #ismein edges input dena generator ka with 3 value as weight
+    def bellman (self,src, edges):
         dist = [float('inf')] * self.V
         prev = [None] * self.V
         dist[src] = 0
